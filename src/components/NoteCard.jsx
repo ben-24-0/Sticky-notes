@@ -1,12 +1,14 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useContext } from "react";
 // import Trash from "../icons/Trash.jsx";
 import DeleteButton from "./DeleteButton.jsx";
 import Spinner from "../icons/Spinner.jsx";
 import { setNewOffset, autoGrow, setZIndex, bodyParser } from "../utils.js";
 import { db } from "../appWrite/databases.js";
+import { NoteContext } from "../context/NoteContext";
+
 // import {setNotes} from ""
 
-const NoteCard = ({ note, setNotes }) => {
+const NoteCard = ({ note }) => {
   const colors = JSON.parse(note.colors);
   const body = bodyParser(note.body);
   {
@@ -22,6 +24,7 @@ const NoteCard = ({ note, setNotes }) => {
 
   useEffect(() => {
     autoGrow(textAreaRef);
+     setZIndex(cardRef.current);
   }, []);
   //to change position state
   const [position, setPosition] = useState(JSON.parse(note.position));
@@ -29,6 +32,7 @@ const NoteCard = ({ note, setNotes }) => {
   let mouseStartPos = { x: 0, y: 0 };
   const cardRef = useRef(null);
 
+  const {setSelectedNote}= useContext(NoteContext)
   const mouseDown = (e) => {
     if (e.target.className === "card-header") {
       mouseStartPos.x = e.clientX;
@@ -36,6 +40,7 @@ const NoteCard = ({ note, setNotes }) => {
       setZIndex(cardRef.current);
       document.addEventListener("mousemove", mouseMove);
       document.addEventListener("mouseup", mouseUp);
+      setSelectedNote(note)
     }
   };
 
@@ -102,7 +107,7 @@ const NoteCard = ({ note, setNotes }) => {
         style={{ backgroundColor: colors.colorHeader }}
       >
        
-         <DeleteButton noteId={note.$id} setNotes={setNotes} />
+         <DeleteButton noteId={note.$id}  />
         {saving && (
           <div className="card-saving">
             <Spinner color={colors.colorText} />
@@ -119,9 +124,11 @@ const NoteCard = ({ note, setNotes }) => {
           style={{ color: colors.colorText }}
           onInput={() => {
             autoGrow(textAreaRef);
+
           }}
           onFocus={() => {
             setZIndex(cardRef.current);
+            setSelectedNote(note);
           }}
           //to get rid of the scroll bar when inputing we add this
         ></textarea>
